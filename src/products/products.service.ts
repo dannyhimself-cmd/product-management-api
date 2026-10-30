@@ -4,6 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity.js';
 import { Repository } from 'typeorm';
+import { PaginationQueryDto } from './dto/pagination-query.dto.js';
 
 @Injectable()
 export class ProductsService {
@@ -17,8 +18,42 @@ export class ProductsService {
     return this.productRepository.save(product);
   }
 
-  findAll(): Promise<Product[]> {
-    return this.productRepository.find();
+  async findAll(query: PaginationQueryDto) {
+    const { page, limit, search, minPrice, maxPrice } = query;
+    const skip = (page-1) * limit;
+    const queryBuilder = this.productRepository.createQueryBuilder('products');
+
+    if(search?.trim()) {
+      queryBuilder.where('products.name LIKE :search', {
+        search: `%${search.trim()}%`,
+      });
+    }
+    if(minPrice != undefined) {
+      queryBuilder.andWhere('products.price >= :minPrice', {
+        minPrice,
+      });
+    }
+    if(maxPrice != undefined) {
+      queryBuilder.andWhere('products.price <= :maxPrice', {
+        maxPrice,
+      });
+    }
+    const [data, total] = 
+    await queryBuilder
+    .skip(skip)
+    .take(limit)
+    .orderBy('products.id')
+    .getManyAndCount()
+
+    return {
+      data, 
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total/limit),
+      },
+    };
   }
 
   async findOne(id: number): Promise<Product> {
