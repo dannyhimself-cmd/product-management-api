@@ -7,9 +7,16 @@ import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { PaginationQueryDto } from './dto/pagination-query.dto.js';
 import type { ProductSortBy } from './dto/pagination-query.dto.js';
 
+//Tạo interface ProductCursor với các thuộc tính sẽ được mã hoá
+//value: tuỳ kiểu sortby: name là string và price sẽ là number
+//id: thuộc tính phụ khi có 2 record trùng nhau về tiêu chí sortby, sẽ được hệ thống tự tính toán và thêm vào
+//order: thứ tự sắp xếp
+//Note: trang đầu tiên sẽ không có cursor, cursor được lấy khi có trang tiếp theo
 interface ProductCursor {
   value: number | string;
   id: number;
+  sortBy: ProductSortBy;
+  order: 'ASC' | 'DESC';
 }
 
 @Injectable()
@@ -28,6 +35,7 @@ export class ProductsService {
     return Buffer.from(JSON.stringify(data)).toString('base64');
   }
 
+  //Mã hoá cursor hợp lệ
   private decodeCursor(cursor: string): ProductCursor {
     try {
       const decoded = Buffer
@@ -35,17 +43,26 @@ export class ProductsService {
         .toString('utf-8');
 
       const data: unknown = JSON.parse(decoded);
+      //Tạo danh sách cho phép giá trị truyền vào để kiểm tra
+      const allowedSortBy: ProductSortBy[] = ['id','name','price'];
+      const allowedOrder = ['ASC', 'DESC']
 
       if (
         typeof data !== 'object' ||
         data === null ||
         !('value' in data) ||
-        !('id' in data)
+        !('id' in data) ||
+        !('sortBy' in data) ||
+        !('order' in data)
       ) {
         throw new BadRequestException('Invalid cursor!');
       }
 
       if (
+        typeof data.sortBy !== 'string' ||
+        typeof data.order !== 'string' ||
+        !allowedSortBy.includes(data.sortBy as ProductSortBy) ||
+        !allowedOrder.includes(data.order) ||
         typeof data.value !== 'string' &&
         (
           typeof data.value !== 'number' ||
@@ -74,6 +91,7 @@ export class ProductsService {
     }
   }
 
+  //Hàm áp dụng truy vấn database cho các điều kiện sortBy và order
   private applyCursorCondition(
     queryBuilder: SelectQueryBuilder<Product>,
     cursor: ProductCursor,
@@ -96,7 +114,7 @@ export class ProductsService {
     }
 
     if (sortBy === 'name' && typeof cursor.value !== 'string') {
-      throw new BadRequestException('Invalid cursor!');
+      throw new BadRequestException('Expected a string value for "name"');
     }
 
     if (
@@ -108,7 +126,7 @@ export class ProductsService {
           Number.isFinite(Number(cursor.value)))
       )
     ) {
-      throw new BadRequestException('Invalid cursor!');
+      throw new BadRequestException('Price value error!');
     }
 
     queryBuilder.andWhere(
@@ -151,16 +169,23 @@ export class ProductsService {
       });
     }
 
+    //Lấy key hợp lệ của trang nếu có
+    //Kiểm tra value trả ra của cursor có khớp với url của query hay không
     const resultsQueryBuilder = queryBuilder.clone();
-    if (cursor) {
-      this.applyCursorCondition(
-        resultsQueryBuilder,
-        this.decodeCursor(cursor),
-        sortBy,
-        order,
-      );
-    }
+      if (cursor) {
+        const result = this.decodeCursor(cursor);
 
+        if (result.sortBy !== sortBy ||result.order !== order) {
+          throw new BadRequestException('order or sortBy value does not match');
+        }
+
+        this.applyCursorCondition(
+          resultsQueryBuilder,
+          result,
+          sortBy,
+          order,
+        );
+    }
     const total = await queryBuilder.getCount();
     resultsQueryBuilder.orderBy(sortColumn[sortBy], order);
 
@@ -171,6 +196,8 @@ export class ProductsService {
     const rows = await resultsQueryBuilder
       .take(limit + 1)
       .getMany();
+
+    //Sinh key cho trang tiếp theo
     const hasNextPage = rows.length > limit;
     const data = rows.slice(0, limit);
     const lastProduct = data[data.length - 1];
@@ -179,6 +206,8 @@ export class ProductsService {
         ? this.encodeCursor({
             value: lastProduct[sortBy],
             id: lastProduct.id,
+            sortBy,
+            order,
           })
         : null;
 

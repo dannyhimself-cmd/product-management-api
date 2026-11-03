@@ -4,6 +4,8 @@ import { AppService } from './app.service.js';
 import { ProductsModule } from './products/products.module.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import 'dotenv/config'
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseInterceptor } from './common/interceptor/response.interceptor.js';
 
 @Module({
   imports: [
@@ -18,7 +20,12 @@ import 'dotenv/config'
       synchronize: true,
     }),
     ProductsModule],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController,],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+    AppService],
 })
 export class AppModule {}
