@@ -8,7 +8,7 @@ import {
 export class PriceRangeValidator implements ValidatorConstraintInterface {
 
     defaultMessage(): string {
-        return "maxPrice must be larger than minPrice!"
+        return "maxPrice must be larger than or equal than minPrice!"
     }
 
     validate(value: unknown, args: ValidationArguments): boolean {

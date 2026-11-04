@@ -1,11 +1,28 @@
-import { IsNotEmpty, IsPositive, IsString } from 'class-validator'
+    import { ApiProperty } from '@nestjs/swagger';
+    import { Transform } from 'class-transformer';
+    import { IsNotEmpty, IsNumber, IsPositive, IsString, Matches } from 'class-validator'
 
-export class CreateProductDto {
-    @IsNotEmpty()
-    @IsString()
-    name: string;
+    export class CreateProductDto {
+        @Transform(({ value }) =>
+            typeof value === 'string'
+                ? value.trim().replace(/\s+/g, ' ')
+                : value
+        )
+        @ApiProperty({
+            description:'Product name',
+            example:'Laptop Dell',
+        })
+        @IsNotEmpty()
+        @IsString()
+        @Matches(/^\S+(?: \S+)*$/)
+        name: string;
 
-    @IsNotEmpty()
-    @IsPositive()
-    price: number;
-}
+        @ApiProperty({
+            description: 'Product price',
+            example: 59.99,
+        })
+        @IsNotEmpty()
+        @IsPositive()
+        @IsNumber()
+        price: number;
+    }

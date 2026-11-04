@@ -1,5 +1,6 @@
 export interface PaginationMeta{
     limit: number,
+    total: number,
     hasNextPage: boolean,
     nextCursor: string | null;
 }
