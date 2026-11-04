@@ -17,7 +17,7 @@ import { ResponseInterceptor } from './common/interceptor/response.interceptor.j
       password: process.env.DB_PASSWORD,
       database: 'product_management',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
     }),
     ProductsModule],
   controllers: [AppController,],
