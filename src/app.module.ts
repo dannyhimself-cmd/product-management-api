@@ -3,21 +3,31 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { ProductsModule } from './products/products.module.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import 'dotenv/config'
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptor/response.interceptor.js';
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import databaseConfig from './config/database-config.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: process.env.DB_PASSWORD,
-      database: 'product_management',
-      autoLoadEntities: true,
-      synchronize: false,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load:[
+        databaseConfig
+      ]
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('database.host'),
+        port: configService.get<number>('database.port'),
+        username: configService.get<string>('database.username'),
+        password: configService.get<string>('database.password'),
+        database: configService.get<string>('database.database'),
+        autoLoadEntities: true,
+        synchronize: false,
+      })
     }),
     ProductsModule],
   controllers: [AppController,],

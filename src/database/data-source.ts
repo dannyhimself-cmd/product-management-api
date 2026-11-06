@@ -1,14 +1,17 @@
 import { DataSource } from "typeorm";
 import 'dotenv/config'
 import { Product } from "../products/entities/product.entity.js";
+import { getDatabaseOptions } from "../config/database-options.js";
+
+const dbConfig = getDatabaseOptions()
 
 export const AppDataSource = new DataSource({
     type: 'mysql',
-    host: 'localhost',
-    port: 3306,
-    username: 'root',
-    password: process.env.DB_PASSWORD,
-    database: 'product_management',
+    host: dbConfig.host,
+    port: dbConfig.port,
+    username: dbConfig.username,
+    password: dbConfig.password,
+    database: dbConfig.database,
 
     entities: [Product],
     migrations: ['src/database/migrations/*.ts'],
