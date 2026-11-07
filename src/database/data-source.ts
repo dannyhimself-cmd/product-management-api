@@ -1,7 +1,11 @@
 import { DataSource } from "typeorm";
-import 'dotenv/config'
 import { Product } from "../products/entities/product.entity.js";
 import { getDatabaseOptions } from "../config/database-options.js";
+import dotenv from 'dotenv';
+
+dotenv.config({
+    path: `.env.${process.env.NODE_ENV || 'development'}`,
+});
 
 const dbConfig = getDatabaseOptions()
 
