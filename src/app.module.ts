@@ -12,9 +12,8 @@ import databaseConfig from './config/database-config.js';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load:[
-        databaseConfig
-      ]
+      load:[databaseConfig],
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],

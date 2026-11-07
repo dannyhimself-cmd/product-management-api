@@ -1,45 +1,42 @@
 # Product Management API
 
-A RESTful API for managing products, built with **NestJS**, **TypeScript**, **TypeORM**, and **MySQL**.
-
-The project focuses on backend fundamentals, including REST API design, data validation, cursor-based pagination, database migrations, and centralized error handling.
+A RESTful API for managing products, built with NestJS, TypeScript, TypeORM, and MySQL. This project focuses on backend development practices, including DTO validation, centralized exception handling, cursor-based pagination, and database migration management.
 
 ## Tech Stack
 
-- **Backend:** NestJS, TypeScript, Node.js
+- **Runtime:** Node.js
+- **Framework:** NestJS
+- **Language:** TypeScript
 - **Database:** MySQL
 - **ORM:** TypeORM
 - **Validation:** class-validator, class-transformer
-- **API Documentation:** Swagger / OpenAPI
-- **Testing:** Vitest
+- **API Documentation:** Swagger
 
 ## Features
 
-- **Product CRUD:** Create, retrieve, update, and delete products.
-- **Request Validation:** Validate request bodies and query parameters using DTOs.
-- **Cursor-based Pagination:** Retrieve records using cursor-based pagination with a configurable page size.
-- **Filtering:** Search products by name and filter by minimum and maximum prices.
-- **Sorting:** Sort products by `id`, `name`, or `price` in ascending or descending order.
-- **Centralized Error Handling:** Standardize error responses through a global exception filter.
-- **Consistent Response Structure:** Wrap successful responses using a global response interceptor.
-- **Database Migrations:** Manage database schema changes through TypeORM migrations.
-- **API Documentation:** Explore and test endpoints through Swagger UI.
+- Product CRUD operations.
+- DTO-based request validation.
+- Centralized exception handling and standardized API responses.
+- Cursor-based pagination with configurable sorting.
+- Product search and price-range filtering.
+- Database schema management using TypeORM migrations.
+- Environment-based configuration.
+- Interactive API documentation with Swagger.
 
 ## Project Structure
 
 ```text
 src/
 ├── common/
-│   ├── filters/          # Global exception filter
-│   ├── interceptor/      # Response interceptor
-│   └── interfaces/
-├── config/               # Application configuration
+│   ├── filters/
+│   └── interceptors/
+├── config/
 ├── database/
-│   ├── migrations/       # TypeORM migrations
-│   └── data-source.ts    # TypeORM CLI data source
+│   ├── migrations/
+│   └── data-source.ts
 ├── products/
-│   ├── dto/              # Request and response DTOs
-│   ├── entities/         # Product entity
+│   ├── dto/
+│   ├── entities/
 │   ├── products.controller.ts
 │   ├── products.service.ts
 │   └── products.module.ts
@@ -49,73 +46,85 @@ src/
 
 ## Getting Started
 
-### Prerequisites
+### 1. Prerequisites
+
+Make sure you have installed:
 
 - Node.js
 - npm
 - MySQL
 
-### 1. Clone the repository
+### 2. Clone the repository
 
 ```bash
 git clone https://github.com/dannyhimself-cmd/product-management-api.git
-
 cd product-management-api
 ```
 
-### 2. Install dependencies
+### 3. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
+### 4. Configure environment variables
 
-Create a `.env` file in the project root based on `.env.example`.
+The project supports separate environment configurations:
+
+- `.env.development` for development.
+- `.env.production` for production.
+
+Use `.env.example` as a reference to create the corresponding environment file.
+
+For local development, create `.env.development` in the project root and configure:
 
 ```env
 NODE_ENV=development
-
 DB_HOST=localhost
 DB_PORT=3306
 DB_USERNAME=root
 DB_PASSWORD=your_password
 DB_DATABASE=product_management
-
 PORT=3000
 ```
 
-Update the values according to your local MySQL configuration.
+Update the values according to your MySQL configuration.
 
-### 4. Create the database
+**Important:** Do not commit environment files containing actual credentials.
 
-Create the database specified by `DB_DATABASE` in MySQL before running the migrations.
+### 5. Create the database
 
-```sql
-CREATE DATABASE product_management;
-```
+Create the database specified by `DB_DATABASE` in your MySQL server before running migrations.
 
-### 5. Run database migrations
+### 6. Run database migrations
 
-Apply pending migrations:
+For development:
 
 ```bash
 npm run typeorm -- migration:run -d src/database/data-source.ts
 ```
 
-Check migration status:
+To inspect migration status:
 
 ```bash
 npm run typeorm -- migration:show -d src/database/data-source.ts
 ```
 
-Revert the latest migration:
+To revert the latest migration:
 
 ```bash
 npm run typeorm -- migration:revert -d src/database/data-source.ts
 ```
 
-### 6. Start the application
+The TypeORM data source loads the environment file based on `NODE_ENV`. Set `NODE_ENV=development` or `NODE_ENV=production` before executing migration commands.
+
+For example
+```bash
+$env:NODE_ENV="production"
+```
+Then follow the instructions above 
+
+### 7. Start the application
 
 Development mode:
 
@@ -123,23 +132,21 @@ Development mode:
 npm run start:dev
 ```
 
-The API will be available at:
+The application runs at:
 
-```text
+```text 
 http://localhost:3000
 ```
 
 ## API Documentation
 
-Swagger UI is available at:
+Swagger documentation is available at:
 
 ```text
 http://localhost:3000/api/docs
 ```
 
 ## API Endpoints
-
-Base path: `/products`
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -149,121 +156,31 @@ Base path: `/products`
 | PATCH | `/products/:id` | Update a product |
 | DELETE | `/products/:id` | Delete a product |
 
-### Create a product
+### Product Listing
 
-**Request**
+The `GET /products` endpoint supports:
 
-```http
-POST /products
-Content-Type: application/json
-```
+| Query Parameter | Description |
+|---|---|
+| `limit` | Number of records per page |
+| `cursor` | Cursor for retrieving the next page |
+| `search` | Search products by name |
+| `minPrice` | Minimum product price |
+| `maxPrice` | Maximum product price |
+| `sortBy` | Sorting field: `id`, `name`, or `price` |
+| `order` | Sorting direction: `ASC` or `DESC` |
 
-```json
-{
-  "name": "Laptop Dell",
-  "price": 599.99
-}
-```
-
-**Response: 201 Created**
-
-```json
-{
-  "data": {
-    "id": 1,
-    "name": "Laptop Dell",
-    "price": "599.99"
-  }
-}
-```
-
-### Retrieve products
-
-The `GET /products` endpoint supports pagination, searching, filtering, and sorting.
-
-**Query parameters**
-
-| Parameter | Description | Default |
-|---|---|---|
-| `limit` | Number of products per page (1–100) | `10` |
-| `cursor` | Cursor for retrieving the next page | None |
-| `search` | Search products by name | None |
-| `minPrice` | Minimum product price | None |
-| `maxPrice` | Maximum product price | None |
-| `sortBy` | Sort field: `id`, `name`, `price` | `id` |
-| `order` | Sort direction: `ASC`, `DESC` | `ASC` |
-
-**Example request**
+Example:
 
 ```http
-GET /products?limit=10&search=keyboard&minPrice=100&maxPrice=1000&sortBy=price&order=ASC
+GET /products?limit=10&search=keyboard&minPrice=100&sortBy=price&order=DESC
 ```
 
-**Response: 200 OK**
+The response includes product data and pagination metadata.
 
-```json
-{
-  "data": [
-    {
-      "id": 1,
-      "name": "Mechanical Keyboard",
-      "price": "299.99"
-    }
-  ],
-  "meta": {
-    "limit": 10,
-    "total": 1,
-    "hasNextPage": false,
-    "nextCursor": null
-  }
-}
-```
+## Database Schema
 
-When `hasNextPage` is `true`, use the returned `nextCursor` to retrieve the next page.
-
-```http
-GET /products?limit=10&cursor=YOUR_NEXT_CURSOR
-```
-
-### Update a product
-
-```http
-PATCH /products/1
-Content-Type: application/json
-```
-
-```json
-{
-  "price": 499.99
-}
-```
-
-### Delete a product
-
-```http
-DELETE /products/1
-```
-
-Returns `204 No Content` when the product is successfully deleted.
-
-## Error Response
-
-The application uses a global exception filter to return a consistent error structure.
-
-```json
-{
-  "statusCode": 400,
-  "message": [
-    "price must be a positive number"
-  ],
-  "timestamp": "2026-11-07T08:00:00.000Z",
-  "path": "/products"
-}
-```
-
-## Database Design
-
-The project currently uses a `products` table.
+### Products
 
 | Column | Type | Description |
 |---|---|---|
@@ -271,8 +188,23 @@ The project currently uses a `products` table.
 | `name` | VARCHAR(100) | Product name |
 | `price` | DECIMAL(10,2) | Product price |
 
-Database schema changes are managed through TypeORM migrations. Automatic schema synchronization is disabled.
+Database schema changes are managed through TypeORM migrations with automatic synchronization disabled.
+
+## Error Handling
+
+The application uses a global exception filter to provide consistent error responses.
+
+Example:
+
+```json
+{
+  "statusCode": 404,
+  "message": "Product not found",
+  "timestamp": "2026-01-01T10:00:00.000Z",
+  "path": "/products/1"
+}
+```
 
 ## License
 
-This project is currently a personal learning and portfolio project.
+This project was developed for learning and portfolio purposes.
