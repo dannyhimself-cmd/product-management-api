@@ -1,132 +1,278 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Product Management API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A RESTful API for managing products, built with **NestJS**, **TypeScript**, **TypeORM**, and **MySQL**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+The project focuses on backend fundamentals, including REST API design, data validation, cursor-based pagination, database migrations, and centralized error handling.
 
-## Description
+## Tech Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Backend:** NestJS, TypeScript, Node.js
+- **Database:** MySQL
+- **ORM:** TypeORM
+- **Validation:** class-validator, class-transformer
+- **API Documentation:** Swagger / OpenAPI
+- **Testing:** Vitest
 
-## Project setup
+## Features
 
-```bash
-$ npm install
+- **Product CRUD:** Create, retrieve, update, and delete products.
+- **Request Validation:** Validate request bodies and query parameters using DTOs.
+- **Cursor-based Pagination:** Retrieve records using cursor-based pagination with a configurable page size.
+- **Filtering:** Search products by name and filter by minimum and maximum prices.
+- **Sorting:** Sort products by `id`, `name`, or `price` in ascending or descending order.
+- **Centralized Error Handling:** Standardize error responses through a global exception filter.
+- **Consistent Response Structure:** Wrap successful responses using a global response interceptor.
+- **Database Migrations:** Manage database schema changes through TypeORM migrations.
+- **API Documentation:** Explore and test endpoints through Swagger UI.
+
+## Project Structure
+
+```text
+src/
+├── common/
+│   ├── filters/          # Global exception filter
+│   ├── interceptor/      # Response interceptor
+│   └── interfaces/
+├── config/               # Application configuration
+├── database/
+│   ├── migrations/       # TypeORM migrations
+│   └── data-source.ts    # TypeORM CLI data source
+├── products/
+│   ├── dto/              # Request and response DTOs
+│   ├── entities/         # Product entity
+│   ├── products.controller.ts
+│   ├── products.service.ts
+│   └── products.module.ts
+├── app.module.ts
+└── main.ts
 ```
 
-## Compile and run the project
+## Getting Started
+
+### Prerequisites
+
+- Node.js
+- npm
+- MySQL
+
+### 1. Clone the repository
 
 ```bash
-# development
-$ npm run start
+git clone https://github.com/dannyhimself-cmd/product-management-api.git
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd product-management-api
 ```
 
-## Run tests
+### 2. Install dependencies
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+### 3. Configure environment variables
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Create a `.env` file in the project root based on `.env.example`.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```env
+NODE_ENV=development
+
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=your_password
+DB_DATABASE=product_management
+
+PORT=3000
+```
+
+Update the values according to your local MySQL configuration.
+
+### 4. Create the database
+
+Create the database specified by `DB_DATABASE` in MySQL before running the migrations.
+
+```sql
+CREATE DATABASE product_management;
+```
+
+### 5. Run database migrations
+
+Apply pending migrations:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run typeorm -- migration:run -d src/database/data-source.ts
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-To add it to this project, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
+Check migration status:
 
 ```bash
-$ npx @nestjs/observe link
+npm run typeorm -- migration:show -d src/database/data-source.ts
 ```
 
-It installs `@nestjs/observe`, wires it into `AppModule` and `main.ts`, and writes the app key and secret into `.env`, which every `nest start` script (`start`, `start:dev`, `start:debug`) then loads. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
-
-Or do it by hand:
+Revert the latest migration:
 
 ```bash
-$ npm install @nestjs/observe
+npm run typeorm -- migration:revert -d src/database/data-source.ts
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/sdk) - it takes a single import and an app key.
+### 6. Start the application
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+Development mode:
 
-## Resources
+```bash
+npm run start:dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+The API will be available at:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```text
+http://localhost:3000
+```
 
-## Support
+## API Documentation
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Swagger UI is available at:
 
-## Stay in touch
+```text
+http://localhost:3000/api/docs
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## API Endpoints
+
+Base path: `/products`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/products` | Create a product |
+| GET | `/products` | Retrieve products |
+| GET | `/products/:id` | Retrieve a product by ID |
+| PATCH | `/products/:id` | Update a product |
+| DELETE | `/products/:id` | Delete a product |
+
+### Create a product
+
+**Request**
+
+```http
+POST /products
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Laptop Dell",
+  "price": 599.99
+}
+```
+
+**Response: 201 Created**
+
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Laptop Dell",
+    "price": "599.99"
+  }
+}
+```
+
+### Retrieve products
+
+The `GET /products` endpoint supports pagination, searching, filtering, and sorting.
+
+**Query parameters**
+
+| Parameter | Description | Default |
+|---|---|---|
+| `limit` | Number of products per page (1–100) | `10` |
+| `cursor` | Cursor for retrieving the next page | None |
+| `search` | Search products by name | None |
+| `minPrice` | Minimum product price | None |
+| `maxPrice` | Maximum product price | None |
+| `sortBy` | Sort field: `id`, `name`, `price` | `id` |
+| `order` | Sort direction: `ASC`, `DESC` | `ASC` |
+
+**Example request**
+
+```http
+GET /products?limit=10&search=keyboard&minPrice=100&maxPrice=1000&sortBy=price&order=ASC
+```
+
+**Response: 200 OK**
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Mechanical Keyboard",
+      "price": "299.99"
+    }
+  ],
+  "meta": {
+    "limit": 10,
+    "total": 1,
+    "hasNextPage": false,
+    "nextCursor": null
+  }
+}
+```
+
+When `hasNextPage` is `true`, use the returned `nextCursor` to retrieve the next page.
+
+```http
+GET /products?limit=10&cursor=YOUR_NEXT_CURSOR
+```
+
+### Update a product
+
+```http
+PATCH /products/1
+Content-Type: application/json
+```
+
+```json
+{
+  "price": 499.99
+}
+```
+
+### Delete a product
+
+```http
+DELETE /products/1
+```
+
+Returns `204 No Content` when the product is successfully deleted.
+
+## Error Response
+
+The application uses a global exception filter to return a consistent error structure.
+
+```json
+{
+  "statusCode": 400,
+  "message": [
+    "price must be a positive number"
+  ],
+  "timestamp": "2026-11-07T08:00:00.000Z",
+  "path": "/products"
+}
+```
+
+## Database Design
+
+The project currently uses a `products` table.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | INT | Primary key, auto-increment |
+| `name` | VARCHAR(100) | Product name |
+| `price` | DECIMAL(10,2) | Product price |
+
+Database schema changes are managed through TypeORM migrations. Automatic schema synchronization is disabled.
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is currently a personal learning and portfolio project.
