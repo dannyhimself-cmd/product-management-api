@@ -1,6 +1,6 @@
     import { ApiProperty } from '@nestjs/swagger';
     import { Transform } from 'class-transformer';
-    import { IsNotEmpty, IsNumber, IsPositive, IsString, Matches } from 'class-validator'
+    import { IsNotEmpty, IsNumber, IsPositive, IsString, Matches, MaxLength } from 'class-validator'
 
     export class CreateProductDto {
         @Transform(({ value }) =>
@@ -15,6 +15,7 @@
         @IsNotEmpty()
         @IsString()
         @Matches(/^\S+(?: \S+)*$/)
+        @MaxLength(100)
         name: string;
 
         @ApiProperty({
