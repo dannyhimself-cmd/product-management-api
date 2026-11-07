@@ -78,6 +78,16 @@ Use `.env.example` as a reference to create the corresponding environment file.
 
 For local development, create `.env.development` in the project root and configure:
 
+**Windows (PowerShell):**
+```powershell
+Copy-Item .env.example .env.development
+```
+
+**Linux/MacOS
+```bash
+cp .env.example .env.development
+```
+
 ```env
 NODE_ENV=development
 DB_HOST=localhost
@@ -88,7 +98,7 @@ DB_DATABASE=product_management
 PORT=3000
 ```
 
-Update the values according to your MySQL configuration.
+Then update the database credentials and other environment variables in .env.development to match your local configuration.
 
 **Important:** Do not commit environment files containing actual credentials.
 
@@ -118,11 +128,13 @@ npm run typeorm -- migration:revert -d src/database/data-source.ts
 
 The TypeORM data source loads the environment file based on `NODE_ENV`. Set `NODE_ENV=development` or `NODE_ENV=production` before executing migration commands.
 
-For example
-```bash
-$env:NODE_ENV="production"
+For powershell
+```powershell
+$env:NODE_ENV="development"
 ```
 Then follow the instructions above 
+
+**Note:** `.env.example` is a template file and is not loaded automatically by the application. The command above creates `.env.development`, which matches the current `envFilePath` configuration.
 
 ### 7. Start the application
 
@@ -136,6 +148,37 @@ The application runs at:
 
 ```text 
 http://localhost:3000
+```
+
+## Production Build
+
+To build and run the application in production mode:
+
+1. Create `.env.production` in the project root using `.env.example` as a reference.
+2. Configure the production database credentials and environment variables.
+3. Build the application:
+
+```bash
+npm run build
+```
+
+4. Start the application
+```bash
+npm run start:prod
+```
+The application will run using the production configuration defined in .env.production.
+
+**Notes:**
+- `npm run build` compiles TypeScript source files into JavaScript in the `dist` directory.
+- `npm run start:prod` starts the application using the compiled files without watch mode.
+- Make sure `NODE_ENV` is set to `production` before starting the application so it loads the `.env.production` configuration file.
+
+For Windows PowerShell:
+
+```powershell
+$env:NODE_ENV="production"
+npm run build
+npm run start:prod
 ```
 
 ## API Documentation

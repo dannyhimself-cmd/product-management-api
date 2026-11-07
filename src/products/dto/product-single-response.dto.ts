@@ -1,4 +1,4 @@
-import { ApiCreatedResponse, ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { ProductResponseDto } from "./product-response.dto.js";
 
 export class ProductSingleResponseDto {
